@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 #include <stdbool.h>
+#include <readline/readline.h>
 
 #include "fork.h"
 #include "jobs.h"
@@ -28,26 +29,25 @@ int main(void)
         char **parsed_input = (char **) malloc(sizeof(char *) * 30);
         char *curtok;
         char *saveptr;
-        int i;
+        int i = 0;
 
         curtok = strtok_r(input, " ", &saveptr);
-
         while(curtok != NULL && i < 30){
+            parsed_input[i] = curtok;
+            //printf("Token: %s\n", curtok);
             parsed_input[i] = curtok;
             i++;
             curtok = strtok_r(NULL, " ", &saveptr);
         }
 
-
-
-//        if(input == "exit"){
-//            free(input);
-//            break;
-//        }
-//
-//        else{
-//            printf(input);
-//        }
+        //for debugging
+        /*
+        printf("parsed tokens: ");
+        for(int j = 0; j < i; j++) {
+            printf("%s ", parsed_input[j]);
+        }
+        printf("\n");
+         */
 
         // 3. Check for job control tokens (fg, bg, jobs, &) (for now just
         // ignore those commands)
