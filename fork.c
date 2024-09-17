@@ -14,6 +14,7 @@ pid_t giveBirth(proc_t *fetus){
     pid_t id = fork();
     if(id == 0){
         //TODO: add support for pipe and pgid
+        //printf("test1");
 
 
 
@@ -23,6 +24,12 @@ pid_t giveBirth(proc_t *fetus){
             exit(1);
         }
     }
+    else if(id > 0){
+      int status;
+      waitpid(id, &status, 0);
+      //printf("# ");
+    }
+    //printf("\ntest\n");
     return id;
 }
 

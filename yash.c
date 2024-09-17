@@ -120,7 +120,7 @@ int main(void)
         if(jobs_sig){exec_jobs();}
         if(bgjobs_sig){exec_bgjobs();}
 
-        oneChildPolicy(&proc1);
+        pid_t proc1_id = oneChildPolicy(&proc1);
 
         // 6. NOTE: There are other steps for job related stuff but good luck
         // we won't spell it out for you
