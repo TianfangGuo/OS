@@ -14,21 +14,10 @@
 #include "signals.h"
 
 //GLOBALS
-#define MAXJOBS 20
 #define MAXTOKENS 67 // 2000/30 = 66.666 = 67
+
 volatile int fg_sig, bg_sig, jobs_sig, bgjobs_sig;
-
-//signal handlers
-void sigint_handler(int sig){
-    printf("SIGINT detected\n");
-    //TODO
-}
-
-void sigtstp_handler(int sig){
-    printf("SIGTSTP detected\n");
-    //TODO
-}
-
+ //= malloc(sizeof(jobs_t) * MAXJOBS);
 
 int main(void)
 {
@@ -51,7 +40,7 @@ int main(void)
             printf("# Exiting YASH, goodbye :)\n");
             exit(0);
         }
-        char **parsed_input = (char **) malloc(sizeof(char *) * MAXTOKENS);
+        char **parsed_input = (char **) malloc(sizeof(char *) * MAXTOKENS+1);
         char *curtok;
         char *saveptr;
         //i = total number of tokens
@@ -65,6 +54,7 @@ int main(void)
             i++;
             curtok = strtok_r(NULL, " ", &saveptr);
         }
+        parsed_input[i] = NULL;
 
         //edge cases
         if(i == 0){
@@ -96,11 +86,11 @@ int main(void)
         fg_sig = strcmp(parsed_input[0], "fg") ? 0 : 1;
         bg_sig = strcmp(parsed_input[0], "bg") ? 0 : 1;
         jobs_sig = strcmp(parsed_input[0], "jobs") ? 0 : 1;
+        bgjobs_sig = strcmp(parsed_input[i-1], "&") ? 0 : 1;
         //TODO: why is the strcmp not working?
         //char last_char = parsed_input[i-1][strlen(parsed_input[i-1])-1];
         //bgjobs_sig = strcmp(&last_char, "&") ? 0 : 1;
-            //if & always has space infront of it then it's much easier
-            bgjobs_sig = strcmp(parsed_input[i-1], "&") ? 0 : 1;
+        //if & always has space infront of it then it's much easier
 
         //for debugging
         /*
@@ -113,6 +103,10 @@ int main(void)
         printf("%s\n", bgjobs_sig ? "& detected!" : "");
          */
 
+        proc_t proc1 = {parsed_input[0], parsed_input, NULL, NULL, NULL, 0, 0};
+        proc_t proc2;
+
+        //execvp(parsed_input[0], parsed_input);
 
         // 4. Determine the number of children processes to create (number of
         // times to call fork) (call fork once per child) (right now this will
@@ -120,6 +114,13 @@ int main(void)
 
         // 5. Execute the commands using execvp or execlp - e.g. execOneChild()
         // or execTwoChildren()
+
+        if(fg_sig){exec_fg();}
+        if(bg_sig){exec_bg();}
+        if(jobs_sig){exec_jobs();}
+        if(bgjobs_sig){exec_bgjobs();}
+
+        oneChildPolicy(&proc1);
 
         // 6. NOTE: There are other steps for job related stuff but good luck
         // we won't spell it out for you
