@@ -12,7 +12,11 @@
 //TODO: more inputs
 pid_t giveBirth(proc_t *fetus){
     pid_t id = fork();
+
+
     if(id == 0){
+
+        //signal(SIGINT, sigint_handler);
         //TODO: add support for pipe and pgid
         //printf("test1");
 

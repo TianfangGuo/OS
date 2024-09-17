@@ -13,6 +13,7 @@
 void sigint_handler(int sig){
     printf("SIGINT detected\n");
     //TODO
+    //kill(getpid(), )
 }
 
 void sigtstp_handler(int sig){
