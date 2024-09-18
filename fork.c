@@ -36,6 +36,12 @@ pid_t giveBirth(proc_t *fetus, rp_sigs insigs, int fds[2], pid_t pid){
         else{
             //printf("%d\n", id);
         }
+        if(signal(SIGTSTP, sigtstp_handler) == SIG_ERR){
+            printf("failed to attach signal handler\n");
+        }
+        else{
+            //printf("%d\n", id);
+        }
 
 
         //printf("test1");

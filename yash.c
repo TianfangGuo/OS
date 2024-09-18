@@ -19,13 +19,25 @@
 volatile int fg_sig, bg_sig, jobs_sig, bgjobs_sig;
  //= malloc(sizeof(jobs_t) * MAXJOBS);
 
+
+
 int main(void)
 {
+
+    //for testing
+    jobs_t a = {1, 0, 0, "placeholder a", NULL};
+    jobs_t b = {2, 0, 1, "placeholder b", NULL};
+    jobs_t c = {3, 0, 2, "placeholder c", NULL};
+
+    insert_job(&a, jobs_list_head);
+    insert_job(&b, jobs_list_head);
+    insert_job(&c, jobs_list_head);
 
     while (1) {
         // 0. Register signal handlers
         signal(SIGINT, sigint_handler);
-        //signal(SIGTSTP, sigtstp_handler);
+        signal(SIGTSTP, sigtstp_handler);
+        signal(SIGCHLD, sigchld_handler);
 
         // 1. Print the prompt (#)
         printf("# ");
@@ -89,16 +101,10 @@ int main(void)
          */
 
         //for debugging
-        /*
-        jobs_t a = {1, 0, 0, NULL};
-        jobs_t b = {2, 0, 1, NULL};
-        jobs_t c = {3, 0, 2, NULL};
 
-        insert_job(&a, jobs_list_head);
-        insert_job(&b, jobs_list_head);
-        insert_job(&c, jobs_list_head);
-        delete_job(jobs_list_head, NULL, 2);
-         */
+
+        //delete_job(jobs_list_head, NULL, 2);
+
 
         // 3. Check for job control tokens (fg, bg, jobs, &) (for now just
         // ignore those commands)

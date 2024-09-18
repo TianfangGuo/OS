@@ -50,7 +50,7 @@ int delete_job(jobs_t *target, jobs_t* parent, int id){
 //insert job at the end of the list
 //return 1 if success
 //return 0 if fail
-int insert_job(jobs_t *target, jobs_t *potential_parent){
+int insert_job(jobs_t *target, volatile jobs_t *potential_parent){
     //list is empty
     //set head to target
     if(potential_parent == NULL){
@@ -69,22 +69,23 @@ int insert_job(jobs_t *target, jobs_t *potential_parent){
 }
 
 void exec_bg(){
-    volatile jobs_t *iter = jobs_list_head;
+    //volatile jobs_t *iter = jobs_list_head;
+    printf("-yash: bg: current: no such job\n");
 }
 void exec_fg(){
-
+    printf("-yash: fg: current: no such job\n");
 }
 void exec_jobs(){
     volatile jobs_t *iter = jobs_list_head;
     while(iter != NULL){
         if(iter->status == 0){
-            printf("[%d]\tRunning\n", iter->jobid);
+            printf("[%d]\tRunning\t\t\t%s\n", iter->jobid, iter->name);
         }
         else if(iter->status == 1){
-            printf("[%d]\tStopped\n", iter->jobid);
+            printf("[%d]\tStopped\t\t\t%s\n", iter->jobid, iter->name);
         }
         else if(iter->status == 2){
-            printf("[%d]\tDone\n", iter->jobid);
+            printf("[%d]\tDone\t\t\t%s\n", iter->jobid, iter->name);
         }
         else{
             //should never get here
