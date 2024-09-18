@@ -24,7 +24,7 @@ int main(void)
 
     while (1) {
         // 0. Register signal handlers
-        //signal(SIGINT, sigint_handler);
+        signal(SIGINT, sigint_handler);
         //signal(SIGTSTP, sigtstp_handler);
 
         // 1. Print the prompt (#)
@@ -251,11 +251,15 @@ int main(void)
         if(bgjobs_sig){exec_bgjobs();}
 
         pid_t proc1_id = giveBirth(&proc1, input_sigs, fds, -1), proc2_id;
+
+        //printf("after proess 1\n%d\n%d\n%d\n%d\n", getpgrp(), getpid(), tcgetpgrp(STDIN_FILENO), proc1_id);
         setpgid(proc1_id, 0);
         if(pipes){
             close(fds[1]);
             proc2_id = giveBirth(&proc2, input_sigs2, fds, proc1_id);
         }
+        //printf("after proess 2\n%d\n%d\n%d\n%d\n", getpgrp(), getpid(), tcgetpgrp(STDIN_FILENO), proc1_id);
+
         //pid_t proc2_id = pipes ? giveBirth(&proc2, input_sigs2, fds, proc1_id) : -1;
 
         // 6. NOTE: There are other steps for job related stuff but good luck

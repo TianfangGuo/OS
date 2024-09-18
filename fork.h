@@ -25,6 +25,8 @@ typedef struct rp_sigs{
     char *sinfile, *soutfile, *serrfile;
 }rp_sigs;
 
+extern volatile int child_pid;
+
 //pid_t oneChildPolicy(proc_t *fetus);
 pid_t giveBirth(proc_t *fetus, rp_sigs insigs, int fds[2], pid_t pid);
 //tpid_t urPregnantWithTwins(proc_t *fetus1, proc_t *fetus2);
