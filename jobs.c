@@ -9,7 +9,7 @@
 
 #include "jobs.h"
 
-volatile jobs_t *jobs_list_head;
+jobs_t *jobs_list_head;
 int jobid_vec[20] = {0};
 
 int generate_jobid(){
@@ -68,30 +68,14 @@ int insert_job(jobs_t *target, jobs_t *potential_parent){
     return 0;
 }
 
-void exec_bg(){
-    volatile jobs_t *iter = jobs_list_head;
-}
 void exec_fg(){
 
 }
+void exec_bg(){
+
+}
 void exec_jobs(){
-    volatile jobs_t *iter = jobs_list_head;
-    while(iter != NULL){
-        if(iter->status == 0){
-            printf("[%d]\tRunning\n", iter->jobid);
-        }
-        else if(iter->status == 1){
-            printf("[%d]\tStopped\n", iter->jobid);
-        }
-        else if(iter->status == 2){
-            printf("[%d]\tDone\n", iter->jobid);
-        }
-        else{
-            //should never get here
-            printf("\nshell error: job is not RUN/STOP/DONE\n");
-        }
-        iter = iter->nextjob;
-    }
+
 }
 void exec_bgjobs(){
 

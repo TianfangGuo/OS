@@ -81,18 +81,6 @@ int main(void)
         printf("\n");
          */
 
-        //for debugging
-        /*
-        jobs_t a = {1, 0, 0, NULL};
-        jobs_t b = {2, 0, 1, NULL};
-        jobs_t c = {3, 0, 2, NULL};
-
-        insert_job(&a, jobs_list_head);
-        insert_job(&b, jobs_list_head);
-        insert_job(&c, jobs_list_head);
-        delete_job(jobs_list_head, NULL, 2);
-         */
-
         // 3. Check for job control tokens (fg, bg, jobs, &) (for now just
         // ignore those commands)
         fg_sig = strcmp(parsed_input[0], "fg") ? 0 : 1;
@@ -114,9 +102,6 @@ int main(void)
         printf("%s\n", jobs_sig ? "jobs detected!" : "");
         printf("%s\n", bgjobs_sig ? "& detected!" : "");
          */
-
-
-
 
         proc_t proc1 = {parsed_input[0], parsed_input, NULL, NULL, NULL, 0, 0};
         proc_t proc2;
