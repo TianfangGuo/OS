@@ -43,6 +43,12 @@ int main(void)
         char **parsed_input = (char **) malloc(sizeof(char *) * MAXTOKENS+1);
         char *curtok;
         char *saveptr;
+        int badinput = 0;
+        int redir_out = 0;
+        int redir_in = 0;
+        int redir_err = 0;
+        int pipe = 0;
+        char *infile, *outfile, *errfile;
         //i = total number of tokens
         int i = 0;
 
@@ -115,12 +121,54 @@ int main(void)
         printf("%s\n", bgjobs_sig ? "& detected!" : "");
          */
 
-
-
-
         proc_t proc1 = {parsed_input[0], parsed_input, NULL, NULL, NULL, 0, 0};
         proc_t proc2;
 
+        //look for redirects and pipes
+        for(int j = 0; j < i; j++){
+            if(!strcmp(parsed_input[j], "<")){
+                redir_in = 1;
+                parsed_input[j] = NULL;
+                if(j+1 == i){
+                    badinput = 1;
+                }
+                else{
+                    infile = parsed_input[j+1];
+                }
+            }
+            else if(!strcmp(parsed_input[j], ">")){
+                redir_out = 1;
+                parsed_input[j] = NULL;
+                if(j+1 == i){
+                    badinput = 1;
+                }
+                else{
+                    outfile = parsed_input[j+1];
+                }
+            }
+            else if(!strcmp(parsed_input[j], "2>")){
+                redir_err = 1;
+                parsed_input[j] = NULL;
+                if(j+1 == i){
+                    badinput = 1;
+                }
+                else{
+                    errfile = parsed_input[j+1];
+                }
+            }
+        }
+
+        rp_sigs input_sigs = {badinput, redir_out, redir_in, redir_err, pipe, infile, outfile, errfile};
+
+        //TODO: need to put this in an actual function (works)
+//        if(badinput == 0){
+//            if(redir_in){
+//                open(infile, O_RDONLY);
+//            }
+//            if(redir_out){
+//                dup2(open(outfile, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH), STDOUT_FILENO);
+//            }
+//        }
         //execvp(parsed_input[0], parsed_input);
 
         // 4. Determine the number of children processes to create (number of
@@ -135,7 +183,7 @@ int main(void)
         if(jobs_sig){exec_jobs();}
         if(bgjobs_sig){exec_bgjobs();}
 
-        pid_t proc1_id = oneChildPolicy(&proc1);
+        pid_t proc1_id = giveBirth(&proc1, input_sigs);
 
         // 6. NOTE: There are other steps for job related stuff but good luck
         // we won't spell it out for you

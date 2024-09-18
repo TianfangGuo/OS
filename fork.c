@@ -10,7 +10,7 @@
 #include <readline/readline.h>
 
 //TODO: more inputs
-pid_t giveBirth(proc_t *fetus){
+pid_t giveBirth(proc_t *fetus, rp_sigs insigs){
     pid_t id = fork();
 
 
@@ -20,7 +20,24 @@ pid_t giveBirth(proc_t *fetus){
         //TODO: add support for pipe and pgid
         //printf("test1");
 
-
+        if(insigs.sbadinput == 0){
+            if(insigs.sredir_in){
+                int result = open(insigs.sinfile, O_RDONLY);
+                if(result == -1){
+                    printf("file doesn't exist\n");
+                    return 0;
+                }
+                else{
+                    dup2(result, STDIN_FILENO);
+                }
+            }
+            if(insigs.sredir_out){
+                dup2(open(insigs.soutfile, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH), STDOUT_FILENO);
+            }
+            if(insigs.sredir_err){
+                dup2(open(insigs.serrfile, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH), STDERR_FILENO);
+            }
+        }
 
         setpgid(0, 0);
 
@@ -37,14 +54,14 @@ pid_t giveBirth(proc_t *fetus){
     return id;
 }
 
-pid_t oneChildPolicy(proc_t *fetus){
-    pid_t id = giveBirth(fetus);
-    return id;
-}
-tpid_t urPregnantWithTwins(proc_t *fetus1, proc_t *fetus2){
-    tpid_t twins;
-    twins.child1 = giveBirth(fetus1);
-    twins.child2 = giveBirth(fetus2);
-    return twins;
-}
+//pid_t oneChildPolicy(proc_t *fetus){
+//    pid_t id = giveBirth(fetus);
+//    return id;
+//}
+//tpid_t urPregnantWithTwins(proc_t *fetus1, proc_t *fetus2){
+//    tpid_t twins;
+//    twins.child1 = giveBirth(fetus1);
+//    twins.child2 = giveBirth(fetus2);
+//    return twins;
+//}
 

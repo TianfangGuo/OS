@@ -16,7 +16,17 @@ typedef struct proc_t{
     int leftArm, rightArm;
 } proc_t;
 
-pid_t oneChildPolicy(proc_t *fetus);
-tpid_t urPregnantWithTwins(proc_t *fetus1, proc_t *fetus2);
+typedef struct rp_sigs{
+    int sbadinput;
+    int sredir_out;
+    int sredir_in;
+    int sredir_err;
+    int spipe;
+    char *sinfile, *soutfile, *serrfile;
+}rp_sigs;
+
+//pid_t oneChildPolicy(proc_t *fetus);
+pid_t giveBirth(proc_t *fetus, rp_sigs insigs);
+//tpid_t urPregnantWithTwins(proc_t *fetus1, proc_t *fetus2);
 
 #endif
