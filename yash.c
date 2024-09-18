@@ -24,8 +24,8 @@ int main(void)
 
     while (1) {
         // 0. Register signal handlers
-        signal(SIGINT, sigint_handler);
-        signal(SIGTSTP, sigtstp_handler);
+        //signal(SIGINT, sigint_handler);
+        //signal(SIGTSTP, sigtstp_handler);
 
         // 1. Print the prompt (#)
         printf("# ");
@@ -47,10 +47,11 @@ int main(void)
         int redir_out = 0;
         int redir_in = 0;
         int redir_err = 0;
-        int pipe = 0;
+        int pipes = 0;
         char *infile, *outfile, *errfile;
-        //i = total number of tokens
         int i = 0;
+        int i2 = 0;
+        int fds[2];
 
         curtok = strtok_r(input, " ", &saveptr);
         while(curtok != NULL && i < MAXTOKENS){
@@ -121,15 +122,14 @@ int main(void)
         printf("%s\n", bgjobs_sig ? "& detected!" : "");
          */
 
-        proc_t proc1 = {parsed_input[0], parsed_input, NULL, NULL, NULL, 0, 0};
-        proc_t proc2;
+        //proc_t proc1 = {parsed_input[0], parsed_input, NULL, NULL, NULL, 0, 0};
 
         //look for redirects and pipes
         for(int j = 0; j < i; j++){
             if(!strcmp(parsed_input[j], "<")){
                 redir_in = 1;
                 parsed_input[j] = NULL;
-                if(j+1 == i){
+                if(j+1 >= i){
                     badinput = 1;
                 }
                 else{
@@ -139,7 +139,7 @@ int main(void)
             else if(!strcmp(parsed_input[j], ">")){
                 redir_out = 1;
                 parsed_input[j] = NULL;
-                if(j+1 == i){
+                if(j+1 >= i){
                     badinput = 1;
                 }
                 else{
@@ -149,16 +149,29 @@ int main(void)
             else if(!strcmp(parsed_input[j], "2>")){
                 redir_err = 1;
                 parsed_input[j] = NULL;
-                if(j+1 == i){
+                if(j+1 >= i){
                     badinput = 1;
                 }
                 else{
                     errfile = parsed_input[j+1];
                 }
             }
+            else if(!strcmp(parsed_input[j], "|")){
+                if(j+1 >= i){
+                    badinput = 1;
+                }
+                else{
+                    i2 = j+1;
+                    pipes = 1;
+                    parsed_input[j] = NULL;
+                    break;
+                }
+            }
         }
 
-        rp_sigs input_sigs = {badinput, redir_out, redir_in, redir_err, pipe, infile, outfile, errfile};
+        //printf("a");
+
+        rp_sigs input_sigs = {badinput, redir_out, redir_in, redir_err, pipes, infile, outfile, errfile};
 
         //TODO: need to put this in an actual function (works)
 //        if(badinput == 0){
@@ -174,6 +187,58 @@ int main(void)
         // 4. Determine the number of children processes to create (number of
         // times to call fork) (call fork once per child) (right now this will
         // just be one)
+        proc_t proc1 = {parsed_input[0], parsed_input,pipes, 0};
+        proc_t proc2 = {parsed_input[i2], parsed_input+i2,0, pipes};
+        rp_sigs input_sigs2 = {0, 0, 0, 0, 0, NULL, NULL, NULL};
+        if(pipes){
+            pipe(fds);
+            for(int j = i2; j < i; j++){
+                if(!strcmp(parsed_input[j], "<")){
+                    input_sigs2.sredir_in = 1;
+                    parsed_input[j] = NULL;
+                    if(j+1 >= i){
+                        input_sigs2.sbadinput = 1;
+                    }
+                    else{
+                        input_sigs2.sinfile = parsed_input[j+1];
+                    }
+                }
+                else if(!strcmp(parsed_input[j], ">")){
+                    input_sigs2.sredir_out = 1;
+                    parsed_input[j] = NULL;
+                    if(j+1 >= i){
+                        input_sigs2.sbadinput = 1;
+                    }
+                    else{
+                        input_sigs2.soutfile = parsed_input[j+1];
+                    }
+                }
+                else if(!strcmp(parsed_input[j], "2>")){
+                    input_sigs2.sredir_err = 1;
+                    parsed_input[j] = NULL;
+                    if(j+1 >= i){
+                        input_sigs2.sbadinput = 1;
+                    }
+                    else{
+                        input_sigs2.serrfile = parsed_input[j+1];
+                    }
+                }
+                else if(!strcmp(parsed_input[j], "|")){
+                    if(j+1 >= i){
+                        input_sigs2.sbadinput = 1;
+                    }
+                    else{
+                        i2 = j+1;
+                        input_sigs2.spipe = 1;
+                        //parsed_input[j] = NULL;
+                        break;
+                    }
+                }
+            }
+        }
+        if(badinput && input_sigs2.sbadinput){
+            continue;
+        }
 
         // 5. Execute the commands using execvp or execlp - e.g. execOneChild()
         // or execTwoChildren()
@@ -183,7 +248,9 @@ int main(void)
         if(jobs_sig){exec_jobs();}
         if(bgjobs_sig){exec_bgjobs();}
 
-        pid_t proc1_id = giveBirth(&proc1, input_sigs);
+        pid_t proc1_id = giveBirth(&proc1, input_sigs, fds, -1);
+        setpgid(proc1_id, 0);
+        pid_t proc2_id = pipes ? giveBirth(&proc2, input_sigs, fds, proc1_id) : -1;
 
         // 6. NOTE: There are other steps for job related stuff but good luck
         // we won't spell it out for you
@@ -192,6 +259,8 @@ int main(void)
 
         free(input);
         free(parsed_input);
+        close(fds[0]);
+        close(fds[1]);
     }
 
     return 0;

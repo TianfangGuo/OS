@@ -12,7 +12,7 @@ typedef struct tpid_t{
 typedef struct proc_t{
     char *cmd;
     char **args;
-    char *in, *out, *err;
+    //char *in, *out, *err;
     int leftArm, rightArm;
 } proc_t;
 
@@ -26,7 +26,7 @@ typedef struct rp_sigs{
 }rp_sigs;
 
 //pid_t oneChildPolicy(proc_t *fetus);
-pid_t giveBirth(proc_t *fetus, rp_sigs insigs);
+pid_t giveBirth(proc_t *fetus, rp_sigs insigs, int fds[2], pid_t pid);
 //tpid_t urPregnantWithTwins(proc_t *fetus1, proc_t *fetus2);
 
 #endif

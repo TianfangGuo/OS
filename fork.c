@@ -10,15 +10,20 @@
 #include <readline/readline.h>
 
 //TODO: more inputs
-pid_t giveBirth(proc_t *fetus, rp_sigs insigs){
+pid_t giveBirth(proc_t *fetus, rp_sigs insigs, int fds[2], pid_t pid){
     pid_t id = fork();
 
+    //signal(SIGINT, sigint_handler);
+    //signal(SIGINT, SIG_DFL);
 
     if(id == 0){
 
         //signal(SIGINT, sigint_handler);
-        //TODO: add support for pipe and pgid
+
         //printf("test1");
+        if(pid != -1){
+            setpgid(0, pid);
+        }
 
         if(insigs.sbadinput == 0){
             if(insigs.sredir_in){
@@ -37,6 +42,15 @@ pid_t giveBirth(proc_t *fetus, rp_sigs insigs){
             if(insigs.sredir_err){
                 dup2(open(insigs.serrfile, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH), STDERR_FILENO);
             }
+        }
+
+        if(fetus->leftArm){
+            close(fds[0]);
+            dup2(fds[1], STDOUT_FILENO);
+        }
+        else if(fetus->rightArm){
+            close(fds[1]);
+            dup2(fds[0], STDIN_FILENO);
         }
 
         setpgid(0, 0);
