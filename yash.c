@@ -188,10 +188,11 @@ int main(void)
         // times to call fork) (call fork once per child) (right now this will
         // just be one)
         proc_t proc1 = {parsed_input[0], parsed_input,pipes, 0};
-        proc_t proc2 = {parsed_input[i2], parsed_input+i2,0, pipes};
+        proc_t proc2 = {(parsed_input+i2)[0], parsed_input+i2,0, pipes};
         rp_sigs input_sigs2 = {0, 0, 0, 0, 0, NULL, NULL, NULL};
         if(pipes){
             pipe(fds);
+            //printf("aaa");
             for(int j = i2; j < i; j++){
                 if(!strcmp(parsed_input[j], "<")){
                     input_sigs2.sredir_in = 1;
@@ -224,6 +225,7 @@ int main(void)
                     }
                 }
                 else if(!strcmp(parsed_input[j], "|")){
+                    printf("aaa");
                     if(j+1 >= i){
                         input_sigs2.sbadinput = 1;
                     }
@@ -236,7 +238,7 @@ int main(void)
                 }
             }
         }
-        if(badinput && input_sigs2.sbadinput){
+        if(badinput | input_sigs2.sbadinput){
             continue;
         }
 
@@ -248,9 +250,13 @@ int main(void)
         if(jobs_sig){exec_jobs();}
         if(bgjobs_sig){exec_bgjobs();}
 
-        pid_t proc1_id = giveBirth(&proc1, input_sigs, fds, -1);
+        pid_t proc1_id = giveBirth(&proc1, input_sigs, fds, -1), proc2_id;
         setpgid(proc1_id, 0);
-        pid_t proc2_id = pipes ? giveBirth(&proc2, input_sigs, fds, proc1_id) : -1;
+        if(pipes){
+            close(fds[1]);
+            proc2_id = giveBirth(&proc2, input_sigs2, fds, proc1_id);
+        }
+        //pid_t proc2_id = pipes ? giveBirth(&proc2, input_sigs2, fds, proc1_id) : -1;
 
         // 6. NOTE: There are other steps for job related stuff but good luck
         // we won't spell it out for you
@@ -259,8 +265,10 @@ int main(void)
 
         free(input);
         free(parsed_input);
-        close(fds[0]);
-        close(fds[1]);
+        //close(fds[0]);
+        //close(fds[1]);
+        int status;
+        waitpid(-proc1_id, &status, WUNTRACED);
     }
 
     return 0;

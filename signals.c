@@ -8,6 +8,7 @@
 #include <readline/readline.h>
 
 #include "signals.h"
+#include "jobs.h"
 
 //signal handlers
 void sigint_handler(int sig){

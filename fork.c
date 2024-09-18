@@ -17,7 +17,7 @@ pid_t giveBirth(proc_t *fetus, rp_sigs insigs, int fds[2], pid_t pid){
     //signal(SIGINT, SIG_DFL);
 
     if(id == 0){
-
+        //printf("%d\n", id);
         //signal(SIGINT, sigint_handler);
 
         //printf("test1");
@@ -47,10 +47,12 @@ pid_t giveBirth(proc_t *fetus, rp_sigs insigs, int fds[2], pid_t pid){
         if(fetus->leftArm){
             close(fds[0]);
             dup2(fds[1], STDOUT_FILENO);
+            //perror("dup2");
         }
         else if(fetus->rightArm){
             close(fds[1]);
             dup2(fds[0], STDIN_FILENO);
+            //perror("dup2");
         }
 
         setpgid(0, 0);
@@ -60,8 +62,10 @@ pid_t giveBirth(proc_t *fetus, rp_sigs insigs, int fds[2], pid_t pid){
         }
     }
     else if(id > 0){
+        //printf("%d\n", id);
       int status;
-      waitpid(id, &status, 0);
+      waitpid(id, &status, WUNTRACED);
+        //fflush(stdout);
       //printf("# ");
     }
     //printf("\ntest\n");
